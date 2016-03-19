@@ -6,7 +6,7 @@ class mahjong(object):
         self.value=value
         self.kind=kind
     def selfprint(self):
-        print '%s:%s'%(self.value,self.kind)
+        print '%s:%s'%(self.value,self.kind),
         return '%s:%s'%(self.value,self.kind)
     def ishua(self):
         if self.kind=='Hua':
@@ -25,7 +25,7 @@ class feng(mahjong):
         self.kind=kind
     def selfprint(self):
         d={1:'dong',2:'nan',3:'xi',4:'bei',5:'zhong',6:'fa',7:'bai'}
-        print '%s:%s'%(d[int(self.value)],self.kind)
+        print '%s:%s'%(d[int(self.value)],self.kind),
         return '%s:%s'%(d[int(self.value)],self.kind)
 
 class hua(mahjong):
@@ -34,7 +34,7 @@ class hua(mahjong):
         self.kind=kind
     def selfprint(self):
         d={1:'chun',2:'xia',3:'qiu',4:'dong',5:'mei',6:'lan',7:'zhu',8:'ju'}
-        print '%s:%s'%(d[int(self.value)],self.kind)
+        print '%s:%s'%(d[int(self.value)],self.kind),
         return '%s:%s'%(d[int(self.value)],self.kind)
 
 
@@ -63,6 +63,11 @@ class player(object):
         print '%s has %s cards:'%(self.name,len(self.card))
         for i in range(len(self.card)):
             self.card[i].selfprint()
+            print '|',
+        print
+        for i in range(len(self.card)+1):
+            print '%s\t'%i,
+        print
         return
 
 
@@ -105,8 +110,9 @@ class player(object):
 
     def deliver(self,i=-1):
         global CURRENTPLAYER
-        print '%s delivers'%(self.name)
+        print '%s delivers'%(self.name),
         self.card[i].selfprint()
+        print
         self.card.pop(i)
         self.sorting()
         CURRENTPLAYER=CURRENTPLAYER%4+1
@@ -206,6 +212,13 @@ deliver(REST,a,b,c,d)
 a.deliver()
 while(len(REST)!=0):
     dic={1:a,2:b,3:c,4:d}
+    p=dic[CURRENTPLAYER]
+    if p==a:
+        print 'yes'
+        p.grab()
+        p.showcard()
+        x=int(raw_input('which?'))
+        p.deliver(x)
     p=dic[CURRENTPLAYER]
     p.grab()
     p.deliver()
