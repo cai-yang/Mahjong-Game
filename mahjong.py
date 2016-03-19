@@ -1,5 +1,6 @@
-REST=[]
-CURRENTPLAYER=1
+REST=[] #牌库
+#CURRENTPLAYER=int(4*random.random())+1 #选定庄家
+CURRENTPLAYER=1 #调试用
 import random
 class mahjong(object):
     def __init__(self,value,kind):
@@ -197,7 +198,8 @@ REST.extend(t)
 REST.extend(f)
 REST.extend(h)
 
-a=player('a',1)
+playername=raw_input('Start a new GAME? Set a name!\n')
+a=player(playername,1)
 b=player('b',2)
 c=player('c',3)
 d=player('d',4)
@@ -206,10 +208,10 @@ d=player('d',4)
 
 random.shuffle(REST)
 
-deliver(REST,a,b,c,d)
+deliver(REST,a,b,c,d) #尝试修改 只需输入第一个摸牌的人即可
 
 
-a.deliver()
+a.deliver() #为保证游戏继续 
 while(len(REST)!=0):
     dic={1:a,2:b,3:c,4:d}
     p=dic[CURRENTPLAYER]
