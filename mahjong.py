@@ -156,11 +156,12 @@ def deliver2(i):
     global REST
     global PLAYERDICT
     q=[[],[],[],[]]
-    for i in range(12):
-        q[0].append(REST[4*i])
-        q[1].append(REST[4*i+1])
-        q[2].append(REST[4*i+2])
-        q[3].append(REST[4*i+3])
+    for x in range(3):
+        for y in range(4):
+            q[0].append(REST[16*x+y])
+            q[1].append(REST[16*x+4+y])
+            q[2].append(REST[16*x+8+y])
+            q[3].append(REST[16*x+12+y])
     q[0].append(REST[48])
     q[0].append(REST[52])
     q[1].append(REST[49])
@@ -168,12 +169,11 @@ def deliver2(i):
     q[3].append(REST[51])
     REST=REST[53:]
     w=PLAYERDICT
-    for i in range(4):
-        w[i+1].handcard=q[i]
-    a.sorting()
-    b.sorting()
-    c.sorting()
-    d.sorting()
+    for y in range(4):
+        w[i].handcard=q[y]
+        w[i].sorting()
+        i=i%4+1
+
 
 
 
@@ -251,8 +251,8 @@ REST.extend(t)
 REST.extend(f)
 REST.extend(h)
 
-playername=raw_input('Start a new GAME? Set a name!\n')
-a=player(playername,1)
+#playername=raw_input('Start a new GAME? Set a name!\n')
+a=player('playername',1)
 b=player('b',2)
 c=player('c',3)
 d=player('d',4)
@@ -264,8 +264,9 @@ PLAYERDICT={1:a,2:b,3:c,4:d}
 random.shuffle(REST)
 
 #deliver(REST,a,b,c,d) #尝试修改 只需输入第一个摸牌的人即可
+print CURRENTPLAYER
 deliver2(CURRENTPLAYER)
-
+print len(a.handcard)
 PLAYERDICT[CURRENTPLAYER].deliver()
 while(len(REST)!=0):
     p=PLAYERDICT[CURRENTPLAYER]
@@ -278,6 +279,8 @@ while(len(REST)!=0):
     p=PLAYERDICT[CURRENTPLAYER]
     p.grab()
     p.deliver()
+    print CURRENTPLAYER
+
     if a.canpeng():
         i=raw_input('Peng?[y/n]')
         if i=='y':
