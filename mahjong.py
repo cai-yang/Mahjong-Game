@@ -1,7 +1,10 @@
-REST=[] #牌库
-#CURRENTPLAYER=int(4*random.random())+1 #选定庄家
-CURRENTPLAYER=1 #调试用
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 import random
+REST=[] #牌库
+CURRENTPLAYER=int(4*random.random())+1 #选定庄家
+CURRENTDELIVERY=None
+
 class mahjong(object):
     def __init__(self,value,kind):
         self.value=value
@@ -55,18 +58,25 @@ class tong(zi):
         self.kind=kind
 
 class player(object):
-    def __init__(self,name,num,card=[]):
+    def __init__(self,name,num,gateway=[],handcard=[]):
         self.name=name
         self.num=num
-        self.card=card
+        self.handcard=handcard
+        self.gateway=gateway
 
     def showcard(self):
-        print '%s has %s cards:'%(self.name,len(self.card))
-        for i in range(len(self.card)):
-            self.card[i].selfprint()
+        if self.gateway!=[]:
+            print 'gateways:',
+            for i in range(len(self.gateway)):
+                self.gateway[i].selfprint()
+                print '|',
+            print
+        print '%s handcards:'%(len(self.handcard))
+        for i in range(len(self.handcard)):
+            self.handcard[i].selfprint()
             print '|',
         print
-        for i in range(len(self.card)+1):
+        for i in range(len(self.handcard)):
             print '%s\t'%i,
         print
         return
@@ -74,24 +84,24 @@ class player(object):
 
     def buhua(self):
         global REST
-        self.card.append(REST[-1])
+        self.handcard.append(REST[-1])
         REST=REST[:-1]
-        if self.card[-1].ishua():
+        if self.handcard[-1].ishua():
             self.buhua()
         return
 
     def grab(self):
         global REST
-        self.card.append(REST[0])
+        self.handcard.append(REST[0])
         REST=REST[1:]
-        if self.card[-1].ishua():
+        if self.handcard[-1].ishua():
             self.buhua()
         return
 
     def sorting(self):
-        for i in range(len(self.card)):
-            if self.card[i].kind=='Hua':
-                self.card.pop(i)
+        for i in range(len(self.handcard)):
+            if self.handcard[i].kind=='Hua':
+                self.handcard.pop(i)
                 self.buhua()
                 self.sorting()
         def order(x,y):
@@ -106,21 +116,64 @@ class player(object):
                 return 0
             if d1[x.kind]<d1[y.kind]:
                 return -1
-        self.card=sorted(self.card,order)
+        self.handcard=sorted(self.handcard,order)
         return
 
     def deliver(self,i=-1):
+        global CURRENTDELIVERY
         global CURRENTPLAYER
         print '%s delivers'%(self.name),
-        self.card[i].selfprint()
+        self.handcard[i].selfprint()
         print
-        self.card.pop(i)
+        CURRENTDELIVERY=self.handcard[i]
+        self.handcard.pop(i)
         self.sorting()
         CURRENTPLAYER=CURRENTPLAYER%4+1
         return
 
+    def canpeng(self):
+        global CURRENTDELIVERY
+        j=0
+        for i in range(len(self.handcard)):
+            if self.handcard[i]==CURRENTDELIVERY:
+                j=j+1
+        if j>=2:
+            return 1
+        else:
+            return 0
+
+    def peng(self):
+        for i in range(3):
+            self.gateway.append(CURRENTDELIVERY)
+        for i in range(2):
+            self.handcard.remove(CURRENTDELIVERY)
+        self.sorting()
+        return
 
 
+
+def deliver2(i):
+    global REST
+    global PLAYERDICT
+    q=[[],[],[],[]]
+    for i in range(12):
+        q[0].append(REST[4*i])
+        q[1].append(REST[4*i+1])
+        q[2].append(REST[4*i+2])
+        q[3].append(REST[4*i+3])
+    q[0].append(REST[48])
+    q[0].append(REST[52])
+    q[1].append(REST[49])
+    q[2].append(REST[50])
+    q[3].append(REST[51])
+    REST=REST[53:]
+    w=PLAYERDICT
+    for i in range(4):
+        w[i+1].handcard=q[i]
+    a.sorting()
+    b.sorting()
+    c.sorting()
+    d.sorting()
 
 
 
@@ -141,10 +194,10 @@ def deliver(rest,a=player('a',1),b=player('b',2),c=player('c',3),d=player('d',4)
     cc.append(REST[50])
     dc.append(REST[51])
     REST=REST[53:]
-    a.card=ac
-    b.card=bc
-    c.card=cc
-    d.card=dc
+    a.handcard=ac
+    b.handcard=bc
+    c.handcard=cc
+    d.handcard=dc
     a.sorting()
     b.sorting()
     c.sorting()
@@ -165,7 +218,7 @@ def sorting(player):
             return 0
         if d1[x.kind]<d1[y.kind]:
             return -1
-    player.card=sorted(player.card,order)
+    player.handcard=sorted(player.handcard,order)
     return
 
 
@@ -204,26 +257,32 @@ b=player('b',2)
 c=player('c',3)
 d=player('d',4)
 
+PLAYERDICT={1:a,2:b,3:c,4:d}
+
 
 
 random.shuffle(REST)
 
-deliver(REST,a,b,c,d) #尝试修改 只需输入第一个摸牌的人即可
+#deliver(REST,a,b,c,d) #尝试修改 只需输入第一个摸牌的人即可
+deliver2(CURRENTPLAYER)
 
-
-a.deliver() #为保证游戏继续 
+PLAYERDICT[CURRENTPLAYER].deliver()
 while(len(REST)!=0):
-    dic={1:a,2:b,3:c,4:d}
-    p=dic[CURRENTPLAYER]
+    p=PLAYERDICT[CURRENTPLAYER]
     if p==a:
         print 'yes'
         p.grab()
         p.showcard()
         x=int(raw_input('which?'))
         p.deliver(x)
-    p=dic[CURRENTPLAYER]
+    p=PLAYERDICT[CURRENTPLAYER]
     p.grab()
     p.deliver()
+    if a.canpeng():
+        i=raw_input('Peng?[y/n]')
+        if i=='y':
+            a.peng()
+
 
 
 
