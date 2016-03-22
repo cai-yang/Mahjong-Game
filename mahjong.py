@@ -4,6 +4,7 @@ import random
 REST=[] #牌库
 CURRENTPLAYER=int(4*random.random())+1 #选定庄家
 CURRENTDELIVERY=None
+PENGINDEX=0
 
 class mahjong(object):
     def __init__(self,value,kind):
@@ -58,11 +59,13 @@ class tong(zi):
         self.kind=kind
 
 class player(object):
-    def __init__(self,name,num,gateway=[],handcard=[]):
+    def __init__(self,name,num,gateway=[],handcard=[],flowers=[],flag=1):
         self.name=name
         self.num=num
         self.handcard=handcard
         self.gateway=gateway
+        self.flowers=flowers
+        self.flag=flag
 
     def showcard(self):
         if self.gateway!=[]:
@@ -73,12 +76,12 @@ class player(object):
             print
         print '%s handcards:'%(len(self.handcard))
         for i in range(len(self.handcard)):
+            print '%2s|'%(int(i+1)),
             self.handcard[i].selfprint()
-            print '|',
-        print
-        for i in range(len(self.handcard)):
-            print '%s\t'%i,
-        print
+            print
+        #for i in range(len(self.handcard)):
+
+        #print
         return
 
 
@@ -87,6 +90,8 @@ class player(object):
         self.handcard.append(REST[-1])
         REST=REST[:-1]
         if self.handcard[-1].ishua():
+            self.flowers.append(self.handcard[-1])
+            self.handcard.pop(-1)
             self.buhua()
         return
 
@@ -95,12 +100,15 @@ class player(object):
         self.handcard.append(REST[0])
         REST=REST[1:]
         if self.handcard[-1].ishua():
+            self.flowers.append(self.handcard[-1])
+            self.handcard.pop(-1)
             self.buhua()
         return
 
     def sorting(self):
         for i in range(len(self.handcard)):
             if self.handcard[i].kind=='Hua':
+                self.flowers.append(self.handcard[i])
                 self.handcard.pop(i)
                 self.buhua()
                 self.sorting()
@@ -119,36 +127,87 @@ class player(object):
         self.handcard=sorted(self.handcard,order)
         return
 
-    def deliver(self,i=-1):
+    def deliver(self,i=0):
         global CURRENTDELIVERY
         global CURRENTPLAYER
+        while (i<0 or i>len(self.handcard)):
+            i=int(raw_input('Please type in the correct number(between 1 and %s)'%(len(self.handcard))))
         print '%s delivers'%(self.name),
-        self.handcard[i].selfprint()
+        self.handcard[i-1].selfprint()
         print
-        CURRENTDELIVERY=self.handcard[i]
-        self.handcard.pop(i)
+        CURRENTDELIVERY=self.handcard[i-1]
+        self.handcard.pop(i-1)
         self.sorting()
         CURRENTPLAYER=CURRENTPLAYER%4+1
         return
 
     def canpeng(self):
         global CURRENTDELIVERY
+        global PENGINDEX
         j=0
-        for i in range(len(self.handcard)):
-            if self.handcard[i]==CURRENTDELIVERY:
+        i=0
+#        for i in range(len(self.handcard)):
+        while (i<len(self.handcard) and j<2):
+            if self.handcard[i].value==CURRENTDELIVERY.value and self.handcard[i].kind==CURRENTDELIVERY.kind:
+                PENGINDEX=i-1
                 j=j+1
-        if j>=2:
-            return 1
+                print 'have %s'%(j)
+            i=i+1
+        if i==len(self.handcard):
+            if j>=2:
+                return 1
+            else:
+                return 0
         else:
-            return 0
+            return 1
 
-    def peng(self):
+    def gang(self):
+        global PENGINDEX
+        global CURRENTPLAYER
+        self.showcard()
+        print PENGINDEX
         for i in range(3):
             self.gateway.append(CURRENTDELIVERY)
         for i in range(2):
-            self.handcard.remove(CURRENTDELIVERY)
+            self.handcard.pop(PENGINDEX)
         self.sorting()
+        CURRENTPLAYER=self.num
         return
+
+    def cangang(self):#期待修复自己gang
+        global CURRENTDELIVERY
+        global GANGINDEX
+        j=0
+        i=0
+#        for i in range(len(self.handcard)):
+        while (i<len(self.handcard) and j<3):
+            if self.handcard[i].value==CURRENTDELIVERY.value and self.handcard[i].kind==CURRENTDELIVERY.kind:
+                PENGINDEX=i-2
+                j=j+1
+                print 'have %s'%(j)
+            i=i+1
+        if i==len(self.handcard):
+            if j>=3:
+                return 1
+            else:
+                return 0
+        else:
+            return 1
+
+    def gang(self):
+        global GANGINDEX
+        global CURRENTPLAYER
+        self.showcard()
+        print GANGINDEX
+        for i in range(4):
+            self.gateway.append(CURRENTDELIVERY)
+        for i in range(3):
+            self.handcard.pop(GANGINDEX)
+        self.buhua()
+        self.sorting()
+        CURRENTPLAYER=self.num
+        return
+
 
 
 
@@ -269,10 +328,13 @@ deliver2(CURRENTPLAYER)
 print len(a.handcard)
 PLAYERDICT[CURRENTPLAYER].deliver()
 while(len(REST)!=0):
+    print 'a have %s cards'%len(a.handcard)
     p=PLAYERDICT[CURRENTPLAYER]
     if p==a:
         print 'yes'
-        p.grab()
+        if p.flag==1:
+            p.grab()
+        p.flag=1
         p.showcard()
         x=int(raw_input('which?'))
         p.deliver(x)
@@ -280,11 +342,17 @@ while(len(REST)!=0):
     p.grab()
     p.deliver()
     print CURRENTPLAYER
-
     if a.canpeng():
-        i=raw_input('Peng?[y/n]')
+        print a.canpeng()
+        a.showcard()
+        CURRENTDELIVERY.selfprint()
+        i=raw_input('is delivered! Peng?[y/n]')
         if i=='y':
             a.peng()
+            a.flag=0
+    else:
+        print a.canpeng()
+
 
 
 
