@@ -5,6 +5,7 @@ REST=[] #牌库
 CURRENTPLAYER=int(4*random.random())+1 #选定庄家
 CURRENTDELIVERY=None
 PENGINDEX=0
+GANGINDEX=0
 
 class mahjong(object):
     def __init__(self,value,kind):
@@ -103,6 +104,23 @@ class player(object):
             self.flowers.append(self.handcard[-1])
             self.handcard.pop(-1)
             self.buhua()
+        GANGTAR=self.handcard[-1]
+        i=0
+        j=0
+        while (i<len(self.handcard)-1 and j<3):
+            if self.handcard[i].value==GANGTAR.value and self.handcard[i].kind==GANGTAR.kind:
+                GANGINDEX=i-2
+                j=j+1
+                print 'have %s'%(j)
+            i=i+1
+        if i==len(self.handcard)-1:
+            if j>=3:
+                self.gang()
+            else:
+                pass
+        else:
+            self.gang()
+
         return
 
     def sorting(self):
@@ -161,7 +179,7 @@ class player(object):
         else:
             return 1
 
-    def gang(self):
+    def peng(self):
         global PENGINDEX
         global CURRENTPLAYER
         self.showcard()
@@ -182,7 +200,7 @@ class player(object):
 #        for i in range(len(self.handcard)):
         while (i<len(self.handcard) and j<3):
             if self.handcard[i].value==CURRENTDELIVERY.value and self.handcard[i].kind==CURRENTDELIVERY.kind:
-                PENGINDEX=i-2
+                GANGINDEX=i-2
                 j=j+1
                 print 'have %s'%(j)
             i=i+1
