@@ -80,9 +80,6 @@ class player(object):
             print '%2s|'%(int(i+1)),
             self.handcard[i].selfprint()
             print
-        #for i in range(len(self.handcard)):
-
-        #print
         return
 
 
@@ -229,7 +226,7 @@ class player(object):
 
 
 
-def deliver2(i):
+def delivering(i):
     global REST
     global PLAYERDICT
     q=[[],[],[],[]]
@@ -250,35 +247,6 @@ def deliver2(i):
         w[i].handcard=q[y]
         w[i].sorting()
         i=i%4+1
-
-
-
-
-def deliver(rest,a=player('a',1),b=player('b',2),c=player('c',3),d=player('d',4)):
-    global REST
-    ac=[]
-    bc=[]
-    cc=[]
-    dc=[]
-    for i in range(12):
-        ac.append(REST[4*i])
-        bc.append(REST[4*i+1])
-        cc.append(REST[4*i+2])
-        dc.append(REST[4*i+3])
-    ac.append(REST[48])
-    ac.append(REST[52])
-    bc.append(REST[49])
-    cc.append(REST[50])
-    dc.append(REST[51])
-    REST=REST[53:]
-    a.handcard=ac
-    b.handcard=bc
-    c.handcard=cc
-    d.handcard=dc
-    a.sorting()
-    b.sorting()
-    c.sorting()
-    d.sorting()
 
 
 
@@ -340,9 +308,8 @@ PLAYERDICT={1:a,2:b,3:c,4:d}
 
 random.shuffle(REST)
 
-#deliver(REST,a,b,c,d) #尝试修改 只需输入第一个摸牌的人即可
 print CURRENTPLAYER
-deliver2(CURRENTPLAYER)
+delivering(CURRENTPLAYER)
 print len(a.handcard)
 PLAYERDICT[CURRENTPLAYER].deliver()
 while(len(REST)!=0):
@@ -356,10 +323,11 @@ while(len(REST)!=0):
         p.showcard()
         x=int(raw_input('which?'))
         p.deliver(x)
-    p=PLAYERDICT[CURRENTPLAYER]
-    p.grab()
-    p.deliver()
-    print CURRENTPLAYER
+    else:
+        #p=PLAYERDICT[CURRENTPLAYER]
+        p.grab()
+        p.deliver(int(len(p.handcard)*random.random())+1) #choose a random card to deliver, will change it after some time.
+        print CURRENTPLAYER
     if a.canpeng():
         print a.canpeng()
         a.showcard()
